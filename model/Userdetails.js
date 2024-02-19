@@ -6,13 +6,15 @@ mongoose.connect("mongodb+srv://adilksmdbatlas:adilks12312@cluster0.usodvjm.mong
 
 let sc=mongoose.Schema;
 const Userschema=new sc({
-        Uid:Number,
+       userId:Number,
         Name:String,
         Phone:Number,
         Email:String,
         Rollno:String,
         College:String,
         Address:String,
+        Username:String,
+        Password:String,
         image1:{
             data:Buffer,
             contentType:String

@@ -15,6 +15,8 @@ const { request } = require("express");
 const { response } = require("express");
 
 const Loginmodel = require("./model/Loginmodel");
+const Moviemodel = require("./model/Movie");
+const Bookmodel = require("./model/Book");
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json());
@@ -43,6 +45,16 @@ app.get('/viewheve',async(request,response)=>{
     var data = await Hevemodel.find();
     response.send(data)
 });
+app.get('/viewmovie',async(request,response)=>{ 
+    var data = await Moviemodel.find();
+    response.send(data)
+});
+app.get('/viewbook',async(request,response)=>{ 
+    var data = await Bookmodel.find();
+    response.send(data)
+});
+
+
 
 
 // Assuming you have a route for fetching colleges
@@ -94,9 +106,9 @@ app.post('/new',upload.single('image1'),async(request,response)=>{
     app.post('/newProfessional',upload.single('image1'),async(request,response)=>{
 
         try{
-            const{Pid,Name,Workinfo,Experience,Contact,Email}=request.body
+            const{Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin}=request.body
             const newdata=new Professionalmodel({
-                Pid,Name,Workinfo,Experience,Contact,Email,
+                Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin,
                 image1:{
                     data:request.file.buffer,
                     contentType:request.file.mimetype,
@@ -114,9 +126,48 @@ app.post('/new',upload.single('image1'),async(request,response)=>{
     app.post('/newUser',upload.single('image1'),async(request,response)=>{
 
         try{
-            const{Uid,Name,Phone,Email,Rollno,College,Address}=request.body
+            const{userId,Name,Phone,Email,Rollno,College,Address,Username,Password}=request.body
             const newdata=new Usermodel({
-                Uid,Name,Phone,Email,Rollno,College,Address,
+                userId,Name,Phone,Email,Rollno,College,Address,Username,Password,
+                image1:{
+                    data:request.file.buffer,
+                    contentType:request.file.mimetype,
+                }
+            })
+            await newdata.save();
+            response.status(200).json({message:'Record saved'});
+        }
+        catch(error)
+        {
+            response.status(500).json({error:'Internal Server error'});
+        }
+    })
+    app.post('/newMovie',upload.single('image1'),async(request,response)=>{
+
+        try{
+            const{Uid,Name,Description,Link}=request.body
+            const newdata=new Moviemodel({
+                Uid,Name,Description,Link,
+                image1:{
+                    data:request.file.buffer,
+                    contentType:request.file.mimetype,
+                }
+            })
+            await newdata.save();
+            response.status(200).json({message:'Record saved'});
+        }
+        catch(error)
+        {
+            response.status(500).json({error:'Internal Server error'});
+        }
+    })
+
+    app.post('/newbook',upload.single('image1'),async(request,response)=>{
+
+        try{
+            const{Uid,Name,Description,Link}=request.body
+            const newdata=new Bookmodel({
+                Uid,Name,Description,Link,
                 image1:{
                     data:request.file.buffer,
                     contentType:request.file.mimetype,
@@ -153,18 +204,104 @@ app.post('/new',upload.single('image1'),async(request,response)=>{
     }
     })
     
+    app.post('/login', async (req, res) => {
+        const { username, password } = req.body;
+      
+        try {
+          const user = await Loginmodel.findOne({ username, password });
+      
+          if (user) {
+            res.json({ success: true, userId: user.userId });
+            
+          } else {
+            res.json({ success: false, message: 'Invalid username or password' });
+          }
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ success: false, message: 'Internal Server Error' });
+        }
+      });
    
     
     
 
+      app.put('/editcollege/:id', upload.single('image1'), async (request, response) => {
 
+        try {
+            const id = request.params.id;
+            const { Cid, Name, University,Address,Phone,Email, AffiliationNumber } = request.body;
+            let result = null;
+            if (request.file) {
+                console.log("sdjfbjs")
+                const updatedData = {
+                    Cid,Name,University,Address,Phone,Email, AffiliationNumber,
+                    image1:{
+                        data:request.file.buffer,
+                        contentType:request.file.mimetype,
+                    }
+                };
+                result = await collegemodel.findByIdAndUpdate(id, updatedData);
+            }
+            else {
+                const updatedData = {
+                    Cid,Name,University,Address,Phone,Email, AffiliationNumber,
+                   
+                }
+                result = await collegemodel.findByIdAndUpdate(id, updatedData);
+            }
+    
+            if (!result) {
+                return response.status(404).json({ message: 'Item not found' });
+            }
+    
+            response.status(200).json({ message: 'Item updated successfully', data: result });
+        } catch (error) {
+            console.error(error);
+            response.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
  
 
-app.put('/edit/:id',async(request,response)=>{
-    let id=request.params.id;
-    await collegemodel.findByIdAndUpdate(id,request.body)
-    response.send("Data updated");
-})
+
+
+
+    app.put('/editprofessional/:id', upload.single('image1'), async (request, response) => {
+
+        try {
+            const id = request.params.id;
+            const {Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin } = request.body;
+            let result = null;
+            if (request.file) {
+                console.log("sdjfbjs")
+                const updatedData = {
+                    Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin,
+                    image1:{
+                        data:request.file.buffer,
+                        contentType:request.file.mimetype,
+                    }
+                };
+                result = await Professionalmodel.findByIdAndUpdate(id, updatedData);
+            }
+            else {
+                const updatedData = {
+                    Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin,
+                   
+                }
+                result = await Professionalmodel.findByIdAndUpdate(id, updatedData);
+            }
+    
+            if (!result) {
+                return response.status(404).json({ message: 'Item not found' });
+            }
+    
+            response.status(200).json({ message: 'Item updated successfully', data: result });
+        } catch (error) {
+            console.error(error);
+            response.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
+ 
+
 
 app.put('/Heveedit/:id',async(request,response)=>{
     let id=request.params.id;

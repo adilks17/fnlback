@@ -1,20 +1,15 @@
 const { contentType } = require("express/lib/response");
 const mongoose = require("mongoose")
 mongoose.connect("mongodb+srv://adilksmdbatlas:adilks12312@cluster0.usodvjm.mongodb.net/?retryWrites=true&w=majority")
-.then(()=>{console.log("DB CONNECTED pro")})
+.then(()=>{console.log("DB CONNECTED Books")})
 .catch(err=>console.log(err));
 
 let sc=mongoose.Schema;
-const Professionalschema=new sc({
-        Pid:Number,
+const Bookschema=new sc({
+        Uid:Number,
         Name:String,
-        Workinfo:String,
-        Experience:String,
-        Contact:Number,
-        Email:String,
-        District:String,
-        State:String,
-        Linkedin:String,
+        Description:String,
+        Link:String,
         image1:{
             data:Buffer,
             contentType:String
@@ -22,6 +17,5 @@ const Professionalschema=new sc({
         
     });
 
-var Professionalmodel=mongoose.model("Professional",Professionalschema)
-module.exports=Professionalmodel;
-
+var Bookmodel=mongoose.model("Book",Bookschema)
+module.exports=Bookmodel;

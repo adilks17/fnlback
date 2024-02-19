@@ -8,7 +8,9 @@ let sc=mongoose.Schema;
 const Heveschema=new sc({
       
         Leve:String,
+        userId:String,
         Response:String
+        
     });
 
 var Hevemodel=mongoose.model("Heve",Heveschema)

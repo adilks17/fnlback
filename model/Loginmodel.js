@@ -5,6 +5,7 @@ mongoose.connect("mongodb+srv://adilksmdbatlas:adilks12312@cluster0.usodvjm.mong
 const logschema=new mongoose.Schema({
 username:String,
 password:String,
+userId:String
 }
 );
 var Loginmodel=mongoose.model("Log",logschema)
