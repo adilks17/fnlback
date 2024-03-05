@@ -17,6 +17,8 @@ const { response } = require("express");
 const Loginmodel = require("./model/Loginmodel");
 const Moviemodel = require("./model/Movie");
 const Bookmodel = require("./model/Book");
+const Appointmentmodel = require("./model/Appointment");
+const Messagemodel = require("./model/Message");
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json());
@@ -45,6 +47,10 @@ app.get('/viewheve',async(request,response)=>{
     var data = await Hevemodel.find();
     response.send(data)
 });
+app.get('/viewAppointment',async(request,response)=>{ 
+    var data = await Appointmentmodel.find();
+    response.send(data)
+});
 app.get('/viewmovie',async(request,response)=>{ 
     var data = await Moviemodel.find();
     response.send(data)
@@ -53,7 +59,14 @@ app.get('/viewbook',async(request,response)=>{
     var data = await Bookmodel.find();
     response.send(data)
 });
-
+app.get('/prevmessages', async (req, res) => {
+    try {
+        const messages = await Messagemodel.find();
+        res.json(messages);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 
 
@@ -103,25 +116,101 @@ app.post('/new',upload.single('image1'),async(request,response)=>{
 //     response.send("record saved");
 //     });
 
-    app.post('/newProfessional',upload.single('image1'),async(request,response)=>{
+app.post('/newProfessional', upload.single('image1'), async (request, response) => {
+    try {
+        const {
+            Pid,
+            Name,
+            Workinfo,
+            Experience,
+            Qualification,
+            Contact,
+            Email,
+            District,
+            State,
+            Rate,
+            Linkedin,
+            OfficeAddress,
+            Address,
+            Awards,
+            Achievements,
+            Facebook,
+            Instagram,
+            X,
+            Rating
+        } = request.body;
 
-        try{
-            const{Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin}=request.body
-            const newdata=new Professionalmodel({
-                Pid,Name,Workinfo,Experience,Contact,Email,District,State,Linkedin,
-                image1:{
-                    data:request.file.buffer,
-                    contentType:request.file.mimetype,
+        const Professional = new Professionalmodel({
+            Pid,
+            Name,
+            Workinfo,
+            Experience,
+            Qualification,
+            Contact,
+            Email,
+            District,
+            State,
+            Rate,
+            Linkedin,
+            OfficeAddress,
+            Address,
+            Awards,
+            Achievements,
+            Facebook,
+            Instagram,
+            X,
+            Rating,
+            image1: {
+                data: request.file.buffer,
+                contentType: request.file.mimetype
+            },
+            workingHours: {
+                monday: {
+                    from: request.body['monday-from'],
+                    to: request.body['monday-to'],
+                    closed: request.body['monday-closed'] === 'true'
+                },
+                tuesday: {
+                    from: request.body['tuesday-from'],
+                    to: request.body['tuesday-to'],
+                    closed: request.body['tuesday-closed'] === 'true'
+                },
+                wednesday: {
+                    from: request.body['wednesday-from'],
+                    to: request.body['wednesday-to'],
+                    closed: request.body['wednesday-closed'] === 'true'
+                },
+                thursday: {
+                    from: request.body['thursday-from'],
+                    to: request.body['thursday-to'],
+                    closed: request.body['thursday-closed'] === 'true'
+                },
+                friday: {
+                    from: request.body['friday-from'],
+                    to: request.body['friday-to'],
+                    closed: request.body['friday-closed'] === 'true'
+                },
+                saturday: {
+                    from: request.body['saturday-from'],
+                    to: request.body['saturday-to'],
+                    closed: request.body['saturday-closed'] === 'true'
+                },
+                sunday: {
+                    from: request.body['sunday-from'],
+                    to: request.body['sunday-to'],
+                    closed: request.body['sunday-closed'] === 'true'
                 }
-            })
-            await newdata.save();
-            response.status(200).json({message:'Record saved'});
-        }
-        catch(error)
-        {
-            response.status(500).json({error:'Internal Server error'});
-        }
-    })
+            }
+        });
+
+        await Professional.save();
+        response.status(200).json({ message: 'Record saved' });
+    } catch (error) {
+        response.status(500).json({ error: 'Internal Server error' });
+        console.log(error);
+    }
+});
+
 
     app.post('/newUser',upload.single('image1'),async(request,response)=>{
 
@@ -189,6 +278,26 @@ app.post('/new',upload.single('image1'),async(request,response)=>{
      response.send("records heve saved")
 
  }) 
+
+ app.post('/newAppointment',(request,response)=>{
+    console.log(request.body)
+    new Appointmentmodel(request.body).save();
+    response.send("records Appointment saved")
+
+}) 
+app.post('/messages', (req, res) => {
+    const { text,  receiver, timestamp, sender,sent,seen } = req.body;
+    const message = new Messagemodel({ text, receiver, timestamp, sender,sent,seen });
+
+    message.save()
+    .then((savedMessage) => {
+        res.status(201).json(savedMessage);
+    })
+    .catch((error) => {
+        console.error('Error saving message:', error);
+        res.status(500).json({ error: 'Failed to save message' });
+    });
+});
 
  app.post('/Loginsearch',async(request,response)=>{
     const {username,password}=request.body;
@@ -308,6 +417,42 @@ app.put('/Heveedit/:id',async(request,response)=>{
     await Hevemodel.findByIdAndUpdate(id,request.body)
     response.send("Data updated");
 })
+app.put('/Appointmentedit/:id',async(request,response)=>{
+    let id=request.params.id;
+    await Appointmentmodel.findByIdAndUpdate(id,request.body)
+    response.send("Data updated");
+})
+
+// Backend route to update the 'seen' property of a message
+app.put('/messages/:id', async (request, response) => {
+    try {
+        const id = request.params.id;
+        const updatedMessage = await Messagemodel.findByIdAndUpdate(id, { seen: true }, { new: true });
+        response.json(updatedMessage);
+    } catch (error) {
+        console.error('Error updating message:', error);
+        response.status(500).json({ error: 'Failed to update message' });
+    }
+});
+
+
+
+// Delete appointment by ID
+app.delete('/deleteAppointment/:id', (req, res) => {
+    const id = req.params.id;
+    Appointmentmodel.findByIdAndDelete(id)
+        .then(result => {
+            if (!result) {
+                res.status(404).send('Appointment not found');
+            } else {
+                res.status(200).send('Appointment deleted');
+            }
+        })
+        .catch(err => {
+            res.status(500).send(err.message);
+        });
+});
+
 
 app.listen(3005,(request,response)=>{
     console.log("port is running 3005")
